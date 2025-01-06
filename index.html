@@ -300,6 +300,7 @@
                         <p><strong>次要污染物：</strong>${latest.minorpollutant || '無'}</p>
                         <p><strong>次要污染物 AQI：</strong>${latest.minorpollutantaqi || '無'}</p>
                         <p><strong>預報文字：</strong>${latest.content}</p>
+                        <p><strong>健康建議：</strong>${getHealthRecommendations(latest.aqi)}</p>
                     `;
 
                     // 生成圖表
