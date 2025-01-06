@@ -184,7 +184,8 @@
     <div id="map"></div>
     <!-- 視覺化區塊 -->
 
-
+    <canvas id="regionBarChart" width="400" height="200"></canvas>
+    
     <script>
         // 設定日期範圍（當日與未來三天）
         document.addEventListener('DOMContentLoaded', () => {
@@ -280,6 +281,8 @@
 
                 // 取得 records
                 const records = data.records;
+
+                generateRegionBarChart(records);
 
                 // 根據 selectedDate 和 county 過濾資料
                 const filteredRecords = records.filter(record => {
@@ -393,15 +396,6 @@
             const longitude = coords.longitude;
             const aqi= parseInt(latest.aqi);
             const markerColor = getMarkerColor(aqi);
-            
-            function getMarkerColor(aqi) {
-                if (aqi <= 50) return 'green';
-                if (aqi <= 100) return 'yellow';
-                if (aqi <= 150) return 'orange';
-                if (aqi <= 200) return 'red';
-                if (aqi<= 300) return 'purple';
-                return 'maroon';
-            }
 
             const customIcon = L.divIcon({
                 className: 'custom-marker',
@@ -442,6 +436,85 @@
             // 移動地圖至標記位置
             map.setView([latitude, longitude], 10);
         }
+
+        function getMarkerColor(aqi) {
+                if (aqi <= 50) return 'green';
+                if (aqi <= 100) return 'yellow';
+                if (aqi <= 150) return 'orange';
+                if (aqi <= 200) return 'red';
+                if (aqi<= 300) return 'purple';
+                return 'maroon';
+            }
+
+        function generateRegionBarChart(data) {
+            const ctx = document.getElementById('regionBarChart').getContext('2d');
+            
+            const regions = {};
+            data.forEach(record => {
+                const { area, aqi } = record;
+                if (!regions[area]) {
+                    regions[area] = { totalAqi: 0, count: 0 };
+                }
+                regions[area].totalAqi += parseInt(aqi);
+                regions[area].count++;
+            });
+            
+            const labels = Object.keys(regions);
+            const avgAqiValues = labels.map(region => Math.round(regions[region].totalAqi / regions[region].count));
+            
+            if (window.regionBarChart instanceof Chart) {
+                window.regionBarChart.destroy();
+            }
+            
+            window.regionBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: '平均 AQI',
+                        data: avgAqiValues,
+                        backgroundColor: labels.map(region => getMarkerColor(avgAqiValues[labels.indexOf(region)])),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各縣市平均 AQI 值'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '縣市'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'AQI 值'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getHealthRecommendations(aqi) {
+            if (aqi <= 50) return '空氣品質良好，適合所有戶外活動。';
+            if (aqi <= 100) return '空氣品質普通，可正常進行戶外活動。';
+            if (aqi <= 150) return '對敏感族群不健康，建議避免長時間戶外活動。';
+            if (aqi <= 200) return '對所有人不健康，建議減少戶外活動並佩戴口罩。';
+            if (aqi <= 300) return '非常不健康，建議避免外出並關閉門窗。';
+            return '危害健康，應留在室內並密切注意空氣品質更新。';
+        }
+        
     </script>
 </body>
 </html>
