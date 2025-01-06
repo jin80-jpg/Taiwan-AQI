@@ -291,6 +291,9 @@
 
                 if (filteredRecords.length > 0) {
                     const latest = filteredRecords[0]; // 取得第一筆資料
+                    console.log('Latest record:', latest); // Debugging
+                    
+                    const aqiValue = parseInt(latest.aqi) || 0;
 
                     resultDiv.innerHTML = `
                         <h2>${county} ${selectedDate} 空氣品質預報</h2>
