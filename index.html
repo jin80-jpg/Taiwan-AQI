@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>台灣每日空氣品質查詢後三天(含今日)</title>
+    <title>台灣每日空氣品質查詢前一天與後三天(含今日)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -166,7 +166,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-    <h1><i class="fas fa-cloud-sun"></i> 台灣每日空氣品質查詢後三天(含今日)</h1>
+    <h1><i class="fas fa-cloud-sun"></i> 台灣每日空氣品質查詢前一天與後三天(含今日)</h1>
     
     <div class="controls">
         <label for="date">選擇日期：</label>
@@ -190,7 +190,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const dateInput = document.getElementById('date');
             const today = new Date();
-            const minDate = today.toISOString().split('T')[0]; // 當日日期
+            const yesterday = new date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const minDate = yesterday.toISOString().split('T')[0]; 
             const maxDate = new Date(today.setDate(today.getDate() + 3)).toISOString().split('T')[0]; // 當日加三天
 
             dateInput.min = minDate;
