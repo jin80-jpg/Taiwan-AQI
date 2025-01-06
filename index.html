@@ -382,20 +382,46 @@
         // 更新地圖標記
         function updateMap(latest, county) {
             const coords = areaCoordinates[county];
-            if (!coords) return;
+            if (!coords) {
+                console.warn(`無法取得 ${county} 的經緯度資料`);
+                return;
+            }
 
             const latitude = coords.latitude;
             const longitude = coords.longitude;
-
             const aqi= parseInt(latest.aqi);
-            let markerColor = aqi < 50 ? 'green' :
-                            aqi < 100 ? 'yellow' :
-                            aqi < 150 ? 'orange' : 'red';
+            const markerColor = getMarkerColor(aqi);
+            
+            function getMarkerColor(aqi) {
+                if (aqi <= 50) return 'green';
+                if (aqi <= 100) return 'yellow';
+                if (aqi <= 150) return 'orange';
+                if (aqi <= 200) return 'red';
+                if (aqi<= 300) return 'purple';
+                return 'maroon';
+            }
 
             const customIcon = L.divIcon({
                 className: 'custom-marker',
-                html: `<div style="background-color:${markerColor};width:20px;height:20px;border-radius:50%;"></div>`
+                html: `<div style="
+                background-color:${markerColor};
+                width:20px;
+                height:20px;
+                border-radius:50%;
+                border: 2px solid #ffffff;
+                box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);">
+                </div>`,
+                iconSize: [25, 25]
             });
+
+            function getAQIDescription(aqi) {
+                if (aqi <= 50) return '良好';
+                if (aqi <= 100) return '普通';
+                if (aqi <= 150) return '對敏感族群不健康';
+                if (aqi <= 200) return '對所有人不健康';   
+                if (aqi <= 300) return '非常不健康';       
+                return '危害'; 
+            }
 
             // 清除之前的標記
             if (window.currentMarker) {
@@ -405,7 +431,11 @@
             // 添加新的標記
             window.currentMarker = L.marker([latitude, longitude], { icon: customIcon })
                 .addTo(map)
-                .bindPopup(`${county} AQI: ${latest.aqi}`).openPopup();
+                .bindPopup(`
+                    <strong>${county}</strong><br>
+                    AQI: ${aqi} (${getAQIDescription(aqi)})<br>
+                    <strong>主要污染物：</strong> ${latest.majorpollutant || '無資料'}
+                `).openPopup();
 
             // 移動地圖至標記位置
             map.setView([latitude, longitude], 10);
